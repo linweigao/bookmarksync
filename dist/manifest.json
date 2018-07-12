@@ -20,7 +20,7 @@
   ],
 
   "background": {
-    "scripts": ["js/vendor.js", "js/background.js"]
+    "page": "background.html"
   },
 
   "permissions": [
