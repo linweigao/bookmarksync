@@ -1,3 +1,5 @@
+import BookmarkUtil from './util/BookmarkUtil'
+
 interface IDriveChange {
 
 }
@@ -17,7 +19,13 @@ interface IDriveFile {
   webViewLink: string
 }
 
-const fileFields = "files(kind, id, name, mimeType, parents, webViewLink)"
+interface IDriveTree {
+  root: IDriveFile,
+  map: Map<string, IDriveFile[]>
+}
+
+const fileFields = 'files(kind, id, name, mimeType, parents, webViewLink)'
+const folderMimeType = 'application/vnd.google-apps.folder'
 
 export default class DriveSync {
   private drive;
@@ -84,7 +92,7 @@ export default class DriveSync {
   public getFolders(): Promise<IDriveFile[]> {
     return this.list({
       fields: fileFields,
-      q: "mimeType='application/vnd.google-apps.folder and trashed = false'"
+      q: "mimeType='application/vnd.google-apps.folder' and trashed = false"
     })
   }
 
@@ -96,7 +104,7 @@ export default class DriveSync {
     })
   }
 
-  public async tree(): Promise<Map<string, IDriveFile[]>> {
+  public async tree(): Promise<IDriveTree> {
     const map = new Map<string, IDriveFile[]>();
     const root = await this.get('root');
     map.set(root.id, null)
@@ -108,6 +116,21 @@ export default class DriveSync {
       map.set(parentKey, children)
     })
 
-    return map;
+    return { root, map };
+  }
+
+  public async syncBookmark(file: IDriveFile, map: Map<string, IDriveFile[]>, parent: string) {
+    if (file.mimeType === folderMimeType) {
+      const node = await BookmarkUtil.createFolder(file.name, parent)
+      const children = map.get(file.id);
+      if (children && children.length > 0) {
+        children.forEach(child => {
+          this.syncBookmark(child, map, node.id)
+        });
+      }
+    }
+    else {
+      const node = await BookmarkUtil.createFile(file.name, file.webViewLink, parent)
+    }
   }
 }

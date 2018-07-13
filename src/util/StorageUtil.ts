@@ -1,4 +1,4 @@
-class StorageUtil {
+export default class StorageUtil {
   static setStartToken(pageStartToken): Promise<void> {
     return new Promise<void>(resolve => {
       chrome.storage.sync.set({ 'startToken': pageStartToken }, () => {
@@ -15,5 +15,3 @@ class StorageUtil {
     })
   }
 }
-
-export default StorageUtil;

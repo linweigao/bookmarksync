@@ -1,4 +1,5 @@
 import StorageUtil from './util/StorageUtil'
+import BookmarkUtil from './util/BookmarkUtil'
 import DriveSync from './DriveSync'
 
 declare var gapi;
@@ -17,8 +18,6 @@ chrome.runtime.onMessage.addListener(function (message, callback) {
 async function polling() {
   console.log('polling');
   //let changes = await drive.listChanges(startToken);
-  let files = await drive.tree();
-  console.log(files)
   setTimeout(polling, 1000 * 30);
 }
 
@@ -33,7 +32,14 @@ chrome.identity.getAuthToken({ interactive: true }, function (token) {
         startToken = await drive.getStartPageToken()
       }
 
-      polling();
+      //polling();
+      const { root, map } = await drive.tree()
+      console.log(root, map)
+
+      const bookmarkTree = await BookmarkUtil.getTree()
+      const bookmarkBar = bookmarkTree[0].children[0]
+
+      drive.syncBookmark(root, map, bookmarkBar.id)
     })
   })
 });
