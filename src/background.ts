@@ -16,8 +16,9 @@ chrome.runtime.onMessage.addListener(function (message, callback) {
 
 async function polling() {
   console.log('polling');
-  let changes = await drive.listChanges(startToken);
-  console.log(changes)
+  //let changes = await drive.listChanges(startToken);
+  let files = await drive.tree();
+  console.log(files)
   setTimeout(polling, 1000 * 30);
 }
 
