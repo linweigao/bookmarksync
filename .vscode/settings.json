@@ -7,5 +7,15 @@
             ],
             "url": "http://json.schemastore.org/chrome-manifest"
         }
-    ]
+    ],
+    // The number of spaces a tab is equal to. This setting is overriden based on the file contents when `editor.detectIndentation` is on.
+    "editor.tabSize": 2,
+    // Format a file on save. A formatter must be available, the file must not be auto-saved, and editor must not be shutting down.
+    "editor.formatOnSave": true,
+    // When enabled, insert a final new line at the end of the file when saving it.
+    "files.insertFinalNewline": true,
+    // Defines space handling before function argument parentheses. Requires TypeScript >= 2.1.5.
+    "javascript.format.insertSpaceBeforeFunctionParenthesis": true,
+    // Defines space handling after the constructor keyword. Requires TypeScript >= 2.3.0.
+    "javascript.format.insertSpaceAfterConstructor": true
 }

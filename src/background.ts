@@ -1,34 +1,38 @@
+import StorageUtil from './util/StorageUtil'
+import DriveSync from './DriveSync'
+
 declare var gapi;
+let drive: DriveSync;
+let startToken: string;
 
+chrome.runtime.onInstalled.addListener(function () {
 
-function polling() {
-    console.log('polling');
-    setTimeout(polling, 1000 * 30);
-}
-
-polling();
-
-chrome.identity.getAuthToken({ interactive: true }, function (token) {
-    console.log(token);
-    gapi.load('client', function () {
-        gapi.client.setToken({ access_token: token });
-        gapi.client.load('drive', 'v3', loadDrive)
-    })
 });
 
-function loadDrive() {
-    console.log(gapi.client.drive.changes)
-    gapi.client.drive.changes.getStartPageToken({})
-        .execute(function (res) {
-            if (!res.error) {
-                console.log(res.startPageToken)
-                gapi.client.drive.changes.list({ pageToken: res.startPageToken })
-                    .execute(function (res) {
-                        console.log("changes", res)
-                    })
-            }
-            else {
+chrome.runtime.onMessage.addListener(function (message, callback) {
 
-            }
-        })
+});
+
+
+async function polling() {
+  console.log('polling');
+  let changes = await drive.listChanges(startToken);
+  console.log(changes)
+  setTimeout(polling, 1000 * 30);
 }
+
+chrome.identity.getAuthToken({ interactive: true }, function (token) {
+  console.log(token);
+  gapi.load('client', function () {
+    gapi.client.setToken({ access_token: token });
+    gapi.client.load('drive', 'v3', async () => {
+      drive = new DriveSync(gapi.client.drive)
+      startToken = await StorageUtil.getStartToken()
+      if (!startToken) {
+        startToken = await drive.getStartPageToken()
+      }
+
+      polling();
+    })
+  })
+});
