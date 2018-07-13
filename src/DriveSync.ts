@@ -97,10 +97,12 @@ export default class DriveSync {
   }
 
   public getFilesUnderFolders(folderIDs: string[]): Promise<IDriveFile[]> {
-    const q = folderIDs.map(id => `'${id}' in parents`).concat(' or')
+    const folderQuery = '(' + folderIDs.map(id => `'${id}' in parents`).join(' or ') + ')'
+    const typeQuery = "mimeType!='application/vnd.google-apps.folder'"
+    console.log(folderQuery)
     return this.list({
       fields: fileFields,
-      q
+      q: typeQuery + ' and trashed = false and ' + folderQuery
     })
   }
 
@@ -110,9 +112,18 @@ export default class DriveSync {
     map.set(root.id, null)
     const folders = await this.getFolders();
     folders.forEach(folder => {
-      let parentKey = folder.parents[0];
-      let children = map.get(parentKey) || [];
+      const parentKey = folder.parents[0];
+      const children = map.get(parentKey) || [];
       children.push(folder)
+      map.set(parentKey, children)
+    })
+
+    const folderIds = folders.concat(root).map(folder => folder.id)
+    const files = await this.getFilesUnderFolders(folderIds)
+    files.forEach(file => {
+      const parentKey = file.parents[0];
+      const children = map.get(parentKey) || [];
+      children.push(file)
       map.set(parentKey, children)
     })
 
