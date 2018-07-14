@@ -1,7 +1,7 @@
 {
-  "name": "chrome-extension-typescript-starter",
+  "name": "bookmarksync",
   "version": "1.0.0",
-  "description": "chrome-extension-typescript-starter",
+  "description": "Sync bookmarks with different source",
   "main": "index.js",
   "scripts": {
     "dev": "webpack --config webpack/webpack.dev.js",
@@ -11,7 +11,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/chibat/chrome-extension-typescript-starter.git"
+    "url": "https://github.com/linweigao/bookmarksync"
   },
   "dependencies": {
     "jquery": "~3.3.1",
