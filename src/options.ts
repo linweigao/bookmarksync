@@ -1,39 +1,28 @@
-import * as moment from 'moment';
 import * as $ from 'jquery';
 
-declare var gapi: any; 
+import ChromeAuthUtil from './util/ChromeAuthUtil'
+import GoogleApiUtil from './util/GoogleApiUtil'
+import DriveSync from './DriveSync'
+
+let token: string;
 
 function onload() {
 
 }
 
-function signin() {
-  chrome.identity.getAuthToken({interactive: true}, function(token) {
-    console.log(token);
-    gapi.load('client', function() {
-      gapi.client.setToken({access_token: token});
-      gapi.client.load('drive', 'v3', loadDrive)
-    })
-  });
+async function signin() {
+  if (token) {
+    await ChromeAuthUtil.removeCachedAuthToken(token)
+  }
+
+  token = await ChromeAuthUtil.getAuthToken(true)
+  console.log(token);
+  await GoogleApiUtil.load('client')
+  GoogleApiUtil.setAuth(token)
+  await GoogleApiUtil.clientLoad('drive', 'v3')
+  const driveSync = new DriveSync()
+  await driveSync.syncDrive()
 }
-
-function loadDrive() {
-  console.log(gapi.client.drive.changes)
-  gapi.client.drive.changes.getStartPageToken({})
-    .execute(function (res) {
-      if (!res.error) {
-        console.log(res.startPageToken)
-        gapi.client.drive.changes.list({pageToken: res.startPageToken})
-          .execute(function (res) {
-            console.log("changes", res)
-          })
-      }
-      else {
-
-      }
-    })
-}
-
 
 $('#signin').click(signin);
 

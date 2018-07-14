@@ -21,25 +21,25 @@ async function polling() {
   setTimeout(polling, 1000 * 30);
 }
 
-chrome.identity.getAuthToken({ interactive: true }, function (token) {
-  console.log(token);
-  gapi.load('client', function () {
-    gapi.client.setToken({ access_token: token });
-    gapi.client.load('drive', 'v3', async () => {
-      drive = new DriveSync(gapi.client.drive)
-      startToken = await StorageUtil.getStartToken()
-      if (!startToken) {
-        startToken = await drive.getStartPageToken()
-      }
+// chrome.identity.getAuthToken({ interactive: true }, function (token) {
+//   console.log(token);
+//   gapi.load('client', function () {
+//     gapi.client.setToken({ access_token: token });
+//     gapi.client.load('drive', 'v3', async () => {
+//       drive = new DriveSync(gapi.client.drive)
+//       startToken = await StorageUtil.getStartToken()
+//       if (!startToken) {
+//         startToken = await drive.getStartPageToken()
+//       }
 
-      //polling();
-      const { root, map } = await drive.tree()
-      console.log(root, map)
+//       //polling();
+//       const { root, map } = await drive.tree()
+//       console.log(root, map)
 
-      const bookmarkTree = await BookmarkUtil.getTree()
-      const bookmarkBar = bookmarkTree[0].children[0]
+//       const bookmarkTree = await BookmarkUtil.getTree()
+//       const bookmarkBar = bookmarkTree[0].children[0]
 
-      drive.syncBookmark(root, map, bookmarkBar.id)
-    })
-  })
-});
+//       drive.syncBookmark(root, map, bookmarkBar.id)
+//     })
+//   })
+// });

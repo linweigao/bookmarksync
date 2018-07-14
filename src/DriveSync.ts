@@ -1,4 +1,5 @@
 import BookmarkUtil from './util/BookmarkUtil'
+declare var gapi;
 
 interface IDriveChange {
 
@@ -24,14 +25,19 @@ interface IDriveTree {
   map: Map<string, IDriveFile[]>
 }
 
-const fileFields = 'files(kind, id, name, mimeType, parents, webViewLink)'
+const fileFields = 'nextPageToken, files(kind, id, name, mimeType, parents, webViewLink)'
 const folderMimeType = 'application/vnd.google-apps.folder'
 
 export default class DriveSync {
   private drive;
 
-  constructor(drive) {
-    this.drive = drive;
+  constructor(drive?) {
+    if (drive) {
+      this.drive = drive
+    }
+    else {
+      this.drive = gapi.client.drive
+    }
   }
 
   public getStartPageToken(): Promise<string> {
@@ -89,6 +95,7 @@ export default class DriveSync {
     })
   }
 
+  // TODO: sharedWithMe = false doesn't work.
   public getFolders(): Promise<IDriveFile[]> {
     return this.list({
       fields: fileFields,
@@ -112,6 +119,11 @@ export default class DriveSync {
     map.set(root.id, null)
     const folders = await this.getFolders();
     folders.forEach(folder => {
+      if (!folder.parents || folder.parents.length == 0) {
+        // 'Shared with me' file
+        return;
+      }
+
       const parentKey = folder.parents[0];
       const children = map.get(parentKey) || [];
       children.push(folder)
@@ -121,6 +133,10 @@ export default class DriveSync {
     const folderIds = folders.concat(root).map(folder => folder.id)
     const files = await this.getFilesUnderFolders(folderIds)
     files.forEach(file => {
+      if (!file.parents || file.parents.length == 0) {
+        // 'Shared with me' file 
+        return;
+      }
       const parentKey = file.parents[0];
       const children = map.get(parentKey) || [];
       children.push(file)
@@ -143,5 +159,15 @@ export default class DriveSync {
     else {
       const node = await BookmarkUtil.createFile(file.name, file.webViewLink, parent)
     }
+  }
+
+  public async syncDrive() : Promise<void> {
+    const { root, map } = await this.tree()
+    console.log(root, map)
+
+    const bookmarkTree = await BookmarkUtil.getTree()
+    const bookmarkBar = bookmarkTree[0].children[0]
+
+    await this.syncBookmark(root, map, bookmarkBar.id)
   }
 }
