@@ -1,5 +1,9 @@
 import * as React from 'react'
 import * as ReactDom from 'react-dom'
+import { Layout, Menu, Icon } from 'antd';
+const { Header, Sider, Content } = Layout;
+import 'antd/es/layout/style/index.css';
+import 'antd/es/menu/style/index.css';
 
 import ChromeAuthUtil from '../util/ChromeAuthUtil'
 import GoogleApiUtil from '../util/GoogleApiUtil'
@@ -24,7 +28,24 @@ async function signin() {
 class Options extends React.Component<any> {
   render() {
     return (
-      <div>hello</div>
+      <Layout>
+        <Sider trigger={null} collapsible={false}        >
+          <div className="logo" />
+          <Menu theme="dark" mode="inline" defaultSelectedKeys={['1']}>
+            <Menu.Item key="1">
+              <Icon type="user" />
+              <span>nav 1</span>
+            </Menu.Item>
+          </Menu>
+        </Sider>
+        <Layout>
+          <Header style={{ background: '#fff', padding: 0 }}>
+          </Header>
+          <Content style={{ margin: '24px 16px', padding: 24, background: '#fff', minHeight: 280 }}>
+            Content
+        </Content>
+        </Layout>
+      </Layout>
     )
   }
 }
