@@ -1,7 +1,7 @@
 import * as React from 'react'
 import * as ReactDom from 'react-dom'
 import { Layout, Menu, Icon } from 'antd';
-const { Header, Sider, Content } = Layout;
+const { Header, Sider, Content, Footer } = Layout;
 import 'antd/es/layout/style/index.css';
 import 'antd/es/menu/style/index.css';
 
@@ -28,8 +28,8 @@ async function signin() {
 class Options extends React.Component<any> {
   render() {
     return (
-      <Layout>
-        <Sider trigger={null} collapsible={false}        >
+      <Layout style={{ height: '100vh' }}>
+        <Sider trigger={null} collapsible={false} >
           <div className="logo" />
           <Menu theme="dark" mode="inline" defaultSelectedKeys={['1']}>
             <Menu.Item key="1">
@@ -42,8 +42,11 @@ class Options extends React.Component<any> {
           <Header style={{ background: '#fff', padding: 0 }}>
           </Header>
           <Content style={{ margin: '24px 16px', padding: 24, background: '#fff', minHeight: 280 }}>
-            Content
-        </Content>
+            test111222
+          </Content>
+          <Footer style={{ textAlign: 'center' }}>
+            Bookmark Sync ©2018 Created by Keyboard120 Studio
+          </Footer>
         </Layout>
       </Layout>
     )
