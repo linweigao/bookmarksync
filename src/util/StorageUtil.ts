@@ -1,16 +1,30 @@
+import IGoogleDriveSyncOption from '../common/GoogleDriveSyncOption'
+
 export default class StorageUtil {
-  static setStartToken(pageStartToken): Promise<void> {
+  static setGoogleDriveSyncOptions(syncOptions: IGoogleDriveSyncOption[]): Promise<void> {
     return new Promise<void>(resolve => {
-      chrome.storage.sync.set({ 'startToken': pageStartToken }, () => {
+      chrome.storage.sync.set({ 'GoogleDriveSyncOptions': JSON.stringify(syncOptions) }, () => {
         resolve()
       })
     })
   }
 
-  static getStartToken(): Promise<string> {
-    return new Promise<string>(resolve => {
-      chrome.storage.sync.get(['startToken'], (result) => {
-        resolve(result.key)
+  static getGoogleDriveSyncOptions(): Promise<IGoogleDriveSyncOption[]> {
+    return new Promise<IGoogleDriveSyncOption[]>(resolve => {
+      chrome.storage.sync.get(['GoogleDriveSyncOptions'], (result) => {
+        if (result.key) {
+          try {
+            const options = JSON.parse(result.key)
+            resolve(options)
+          }
+          catch (err) {
+            console.log(err)
+            resolve(null)
+          }
+        }
+        else {
+          resolve(null)
+        }
       })
     })
   }

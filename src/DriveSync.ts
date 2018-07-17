@@ -29,20 +29,9 @@ const fileFields = 'nextPageToken, files(kind, id, name, mimeType, parents, webV
 const folderMimeType = 'application/vnd.google-apps.folder'
 
 export default class DriveSync {
-  private drive;
-
-  constructor(drive?) {
-    if (drive) {
-      this.drive = drive
-    }
-    else {
-      this.drive = gapi.client.drive
-    }
-  }
-
-  public getStartPageToken(): Promise<string> {
+  public static getStartPageToken(): Promise<string> {
     return new Promise<string>((resolve, reject) => {
-      this.drive.changes.getStartPageToken({})
+      gapi.client.drive.changes.getStartPageToken({})
         .execute((res) => {
           if (res.error) {
             reject(res.error)
@@ -53,9 +42,9 @@ export default class DriveSync {
     })
   }
 
-  public listChanges(startToken): Promise<IDriveChange> {
+  public static listChanges(startToken): Promise<IDriveChange> {
     return new Promise<IDriveChange>((resolve, reject) => {
-      this.drive.changes.list({ pageToken: startToken })
+      gapi.client.drive.changes.list({ pageToken: startToken })
         .execute(res => {
           if (res.error) {
             reject(res.error)
@@ -67,9 +56,9 @@ export default class DriveSync {
     })
   }
 
-  public list(options): Promise<IDriveFile[]> {
+  public static list(options): Promise<IDriveFile[]> {
     return new Promise<IDriveFile[]>((resolve, reject) => {
-      this.drive.files.list(options)
+      gapi.client.drive.files.list(options)
         .execute(res => {
           if (res.error) {
             reject(res.error)
@@ -81,9 +70,9 @@ export default class DriveSync {
     })
   }
 
-  public get(fileId: string): Promise<IDriveFile> {
+  public static get(fileId: string): Promise<IDriveFile> {
     return new Promise<IDriveFile>((resolve, reject) => {
-      this.drive.files.get({ fileId })
+      gapi.client.drive.files.get({ fileId })
         .execute(res => {
           if (res.error) {
             reject(res.error)
@@ -96,14 +85,14 @@ export default class DriveSync {
   }
 
   // TODO: sharedWithMe = false doesn't work.
-  public getFolders(): Promise<IDriveFile[]> {
+  public static getFolders(): Promise<IDriveFile[]> {
     return this.list({
       fields: fileFields,
       q: "mimeType='application/vnd.google-apps.folder' and trashed = false"
     })
   }
 
-  public getFilesUnderFolders(folderIDs: string[]): Promise<IDriveFile[]> {
+  public static getFilesUnderFolders(folderIDs: string[]): Promise<IDriveFile[]> {
     const folderQuery = '(' + folderIDs.map(id => `'${id}' in parents`).join(' or ') + ')'
     const typeQuery = "mimeType!='application/vnd.google-apps.folder'"
     console.log(folderQuery)
@@ -113,7 +102,7 @@ export default class DriveSync {
     })
   }
 
-  public async tree(): Promise<IDriveTree> {
+  public static async tree(): Promise<IDriveTree> {
     const map = new Map<string, IDriveFile[]>();
     const root = await this.get('root');
     map.set(root.id, null)
@@ -146,7 +135,7 @@ export default class DriveSync {
     return { root, map };
   }
 
-  public async syncBookmark(file: IDriveFile, map: Map<string, IDriveFile[]>, parent: string) {
+  public static async syncBookmark(file: IDriveFile, map: Map<string, IDriveFile[]>, parent: string) {
     if (file.mimeType === folderMimeType) {
       const node = await BookmarkUtil.createFolder(file.name, parent)
       const children = map.get(file.id);
@@ -161,7 +150,7 @@ export default class DriveSync {
     }
   }
 
-  public async syncDrive() : Promise<void> {
+  public static async syncDrive(): Promise<void> {
     const { root, map } = await this.tree()
     console.log(root, map)
 

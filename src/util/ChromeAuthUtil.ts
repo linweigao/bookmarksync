@@ -13,6 +13,20 @@ export default class ChromeAuthUtil {
     })
   }
 
+  static getProfileUserInfo(): Promise<string> {
+    return new Promise<string>((resolve, reject) => {
+      chrome.identity.getProfileUserInfo(userInfo => {
+        console.log(userInfo)
+        if (userInfo && userInfo.id) {
+          resolve(userInfo.id)
+        }
+        else {
+          reject("cannot get user info")
+        }
+      })
+    })
+  }
+
   static revokeToken(token: string): Promise<any> {
     const revokeUrl = 'https://accounts.google.com/o/oauth2/revoke?token=' + token;
     return window.fetch(revokeUrl)

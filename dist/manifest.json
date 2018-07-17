@@ -24,6 +24,7 @@
   },
   "permissions": [
     "identity",
+    "identity.email",
     "storage",
     "bookmarks",
     "*://apis.google.com/*",

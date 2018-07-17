@@ -5,32 +5,60 @@ const { Header, Sider, Content, Footer } = Layout;
 import 'antd/es/layout/style/index.css';
 import 'antd/es/menu/style/index.css';
 import 'antd/es/button/style/index.css';
+import 'antd/es/modal/style/index.css';
 
 import ChromeAuthUtil from '../util/ChromeAuthUtil'
 import GoogleApiUtil from '../util/GoogleApiUtil'
+import StorageUtil from '../util/StorageUtil'
+import IGoogleDriveSyncOption from '../common/GoogleDriveSyncOption'
 import DriveSync from '../DriveSync'
 
-class Options extends React.Component<any> {
+interface IOptionState {
+  token?: string;
+  userId?: string;
+  currentSyncOptions?: IGoogleDriveSyncOption[];
+}
+
+class Options extends React.Component<void, IOptionState> {
+  private googleDriveSyncOptions: IGoogleDriveSyncOption[];
+
+  async componentWillMount() {
+    await GoogleApiUtil.load('client')
+    await GoogleApiUtil.clientLoad('drive', 'v3')
+    this.googleDriveSyncOptions = await StorageUtil.getGoogleDriveSyncOptions();
+
+    try {
+      await this.loginGoogle(false);
+    }
+    catch (err) {
+      // No login google account
+    }
+  }
+
   async syncGoogleDrive() {
     let token;
     try {
-      token = await ChromeAuthUtil.getAuthToken(true)
-      console.log(token);
-      await GoogleApiUtil.load('client')
-      GoogleApiUtil.setAuth(token)
-      await GoogleApiUtil.clientLoad('drive', 'v3')
-      const driveSync = new DriveSync()
-      await driveSync.syncDrive()
-
-      // Remove token from cache to support multi accounts
-      await ChromeAuthUtil.revokeToken(token)
-      await ChromeAuthUtil.removeCachedAuthToken(token)
+      await DriveSync.syncDrive()
     }
     catch (ex) {
       if (token && ex.code === 401) {
         await ChromeAuthUtil.removeCachedAuthToken(token)
+        await this.loginGoogle(true)
       }
     }
+  }
+
+  async loginGoogle(interactive: boolean = true) {
+    const token = await ChromeAuthUtil.getAuthToken(interactive)
+    const userId = await ChromeAuthUtil.getProfileUserInfo();
+    GoogleApiUtil.setAuth(token)
+    this.setState({ token, userId })
+  }
+
+  async switchAccount() {
+    await ChromeAuthUtil.revokeToken(token)
+    await ChromeAuthUtil.removeCachedAuthToken(token)
+    await this.loginGoogle(true)
   }
 
   render() {
@@ -47,7 +75,7 @@ class Options extends React.Component<any> {
         </Sider>
         <Layout>
           <Header style={{ background: '#fff', padding: 0 }}>
-            <Button style={{ float: 'right' }} type="primary" icon="plus-circle-o" onClick={this.syncGoogleDrive}>
+            <Button style={{ float: 'right' }} type="primary" icon="poweroff" onClick={this.loginGoogle}>
               Sync Google Drive
             </Button>
           </Header>
