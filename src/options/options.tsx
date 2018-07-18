@@ -1,7 +1,9 @@
 import * as React from 'react'
 import * as ReactDom from 'react-dom'
-import { Layout, Menu, Icon, Button } from 'antd';
+import { Card, Layout, Menu, Icon, Button } from 'antd';
 const { Header, Sider, Content, Footer } = Layout;
+import 'antd/es/card/style/index.css';
+import 'antd/es/icon/style/css.js';
 import 'antd/es/layout/style/index.css';
 import 'antd/es/menu/style/index.css';
 import 'antd/es/button/style/index.css';
@@ -68,22 +70,21 @@ class Options extends React.Component<{}, IOptionState> {
     return (
       <Layout style={{ height: '100vh' }}>
         <Sider trigger={null} collapsible={false} >
-          <div className="logo" />
+          <div className="logo" >
+            <span>Bookmark Sync</span>
+          </div>
           <Menu theme="dark" mode="inline" defaultSelectedKeys={['1']}>
             <Menu.Item key="1">
               <Icon type="user" />
-              <span>nav 1</span>
+              <span>Google Drive</span>
             </Menu.Item>
           </Menu>
         </Sider>
         <Layout>
-          <Header style={{ background: '#fff', padding: 0 }}>
-            <Button style={{ float: 'right' }} type="primary" icon="poweroff" onClick={this.onGoogleLoginClicked}>
-              Sync Google Drive
-            </Button>
-          </Header>
           <Content style={{ margin: '24px 16px', padding: 24, background: '#fff', minHeight: 280 }}>
-            test111222
+            <Card title='Google Drive'>
+
+            </Card>
           </Content>
           <Footer style={{ textAlign: 'center' }}>
             Bookmark Sync ©2018 Created by Keyboard120 Studio
