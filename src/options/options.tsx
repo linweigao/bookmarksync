@@ -19,7 +19,7 @@ interface IOptionState {
   currentSyncOptions?: IGoogleDriveSyncOption[];
 }
 
-class Options extends React.Component<void, IOptionState> {
+class Options extends React.Component<{}, IOptionState> {
   private googleDriveSyncOptions: IGoogleDriveSyncOption[];
 
   async componentWillMount() {
@@ -28,21 +28,24 @@ class Options extends React.Component<void, IOptionState> {
     this.googleDriveSyncOptions = await StorageUtil.getGoogleDriveSyncOptions();
 
     try {
-      await this.loginGoogle(false);
+      await this.loginGoogle(false)
     }
     catch (err) {
       // No login google account
     }
   }
 
+  async onGoogleLoginClicked() {
+    await this.loginGoogle(true)
+  }
+
   async syncGoogleDrive() {
-    let token;
     try {
       await DriveSync.syncDrive()
     }
     catch (ex) {
-      if (token && ex.code === 401) {
-        await ChromeAuthUtil.removeCachedAuthToken(token)
+      if (ex.code === 401) {
+        await ChromeAuthUtil.removeCachedAuthToken(this.state.token)
         await this.loginGoogle(true)
       }
     }
@@ -56,8 +59,8 @@ class Options extends React.Component<void, IOptionState> {
   }
 
   async switchAccount() {
-    await ChromeAuthUtil.revokeToken(token)
-    await ChromeAuthUtil.removeCachedAuthToken(token)
+    await ChromeAuthUtil.revokeToken(this.state.token)
+    await ChromeAuthUtil.removeCachedAuthToken(this.state.token)
     await this.loginGoogle(true)
   }
 
@@ -75,7 +78,7 @@ class Options extends React.Component<void, IOptionState> {
         </Sider>
         <Layout>
           <Header style={{ background: '#fff', padding: 0 }}>
-            <Button style={{ float: 'right' }} type="primary" icon="poweroff" onClick={this.loginGoogle}>
+            <Button style={{ float: 'right' }} type="primary" icon="poweroff" onClick={this.onGoogleLoginClicked}>
               Sync Google Drive
             </Button>
           </Header>
