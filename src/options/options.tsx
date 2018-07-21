@@ -9,63 +9,9 @@ import 'antd/es/menu/style/index.css';
 import 'antd/es/button/style/index.css';
 import 'antd/es/modal/style/index.css';
 
-import ChromeAuthUtil from '../util/ChromeAuthUtil'
-import GoogleApiUtil from '../util/GoogleApiUtil'
-import StorageUtil from '../util/StorageUtil'
-import IGoogleDriveSyncOption from '../common/GoogleDriveSyncOption'
-import DriveSync from '../DriveSync'
+import GoogleDriveSyncSetting from './GoogleDriveSyncSetting'
 
-interface IOptionState {
-  token?: string;
-  userId?: string;
-  currentSyncOptions?: IGoogleDriveSyncOption[];
-}
-
-class Options extends React.Component<{}, IOptionState> {
-  private googleDriveSyncOptions: IGoogleDriveSyncOption[];
-
-  async componentWillMount() {
-    await GoogleApiUtil.load('client')
-    await GoogleApiUtil.clientLoad('drive', 'v3')
-    this.googleDriveSyncOptions = await StorageUtil.getGoogleDriveSyncOptions();
-
-    try {
-      await this.loginGoogle(false)
-    }
-    catch (err) {
-      // No login google account
-    }
-  }
-
-  async onGoogleLoginClicked() {
-    await this.loginGoogle(true)
-  }
-
-  async syncGoogleDrive() {
-    try {
-      await DriveSync.syncDrive()
-    }
-    catch (ex) {
-      if (ex.code === 401) {
-        await ChromeAuthUtil.removeCachedAuthToken(this.state.token)
-        await this.loginGoogle(true)
-      }
-    }
-  }
-
-  async loginGoogle(interactive: boolean = true) {
-    const token = await ChromeAuthUtil.getAuthToken(interactive)
-    const userId = await ChromeAuthUtil.getProfileUserInfo();
-    GoogleApiUtil.setAuth(token)
-    this.setState({ token, userId })
-  }
-
-  async switchAccount() {
-    await ChromeAuthUtil.revokeToken(this.state.token)
-    await ChromeAuthUtil.removeCachedAuthToken(this.state.token)
-    await this.loginGoogle(true)
-  }
-
+class Options extends React.Component<{}> {
   render() {
     return (
       <Layout style={{ height: '100vh' }}>
@@ -82,12 +28,10 @@ class Options extends React.Component<{}, IOptionState> {
         </Sider>
         <Layout>
           <Content style={{ margin: '24px 16px', padding: 24, background: '#fff', minHeight: 280 }}>
-            <Card title='Google Drive'>
-
-            </Card>
+            <GoogleDriveSyncSetting />
           </Content>
           <Footer style={{ textAlign: 'center' }}>
-            Bookmark Sync ©2018 Created by Keyboard120 Studio
+            Bookmark Sync ©2018 Created by 120 Studio
           </Footer>
         </Layout>
       </Layout>

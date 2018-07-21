@@ -1,9 +1,12 @@
 import * as React from 'react'
 import { Modal, Button } from 'antd';
 
-interface IGoogleDriveOption {
+import IGoogleDriveSyncOption from '../common/GoogleDriveSyncOption'
+
+interface IGoogleDriveOptionProps {
   visible: boolean;
-  onSave: () => void;
+  option: IGoogleDriveSyncOption;
+  onSync: (options: IGoogleDriveSyncOption) => void;
   onCancel: () => void;
 }
 
@@ -12,19 +15,19 @@ interface IGoogleDriveOptionState {
   bookmarkName: string;
 }
 
-export class GoogleDriveOption extends React.Component<IGoogleDriveOption, IGoogleDriveOptionState> {
+export default class GoogleDriveModal extends React.Component<IGoogleDriveOptionProps, IGoogleDriveOptionState> {
   handleOk = (e) => {
-    console.log(e);
+    this.props.onSync(this.props.option)
   }
 
   handleCancel = (e) => {
-    console.log(e);
+    this.props.onCancel()
   }
 
   render() {
     return (
       <Modal
-        title="Google Drive Sync Options"
+        title="Sync Google Drive to Bookmark"
         visible={this.props.visible}
         onOk={this.handleOk}
         onCancel={this.handleCancel}

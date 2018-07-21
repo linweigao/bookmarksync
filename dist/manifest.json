@@ -1,7 +1,7 @@
 {
   "manifest_version": 2,
   "name": "Bookmark Sync",
-  "description": "Sync different sources to your bookmard for easy access",
+  "description": "Sync different sources to your bookmark for easy access.\r\nIncludes: Google Drive",
   "version": "1.0",
   "options_page": "options.html",
   "browser_action": {
