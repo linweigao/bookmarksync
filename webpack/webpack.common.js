@@ -1,5 +1,6 @@
 const webpack = require("webpack");
 const path = require('path');
+const CopyWebpackPlugin = require('copy-webpack-plugin')
 const tsImportPluginFactory = require('ts-import-plugin')
 
 module.exports = {
@@ -51,5 +52,10 @@ module.exports = {
     plugins: [
         // exclude locale files in moment
         new webpack.IgnorePlugin(/^\.\/locale$/, /moment$/),
+        new CopyWebpackPlugin([
+            {
+                from: 'lib/google.api.js',
+            }
+        ])
     ]
 };

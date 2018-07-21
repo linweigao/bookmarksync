@@ -5,35 +5,26 @@
   "version": "1.0",
   "options_page": "options.html",
   "browser_action": {
-    "default_icon": "bookmark-16.png",
-    "default_popup": "popup.html"
+    "default_icon": "bookmark-16.png"
   },
   "icons": {
     "16": "bookmark-16.png",
     "48": "bookmark-48.png",
     "128": "bookmark-128.png"
   },
-  "content_scripts": [
-    {
-      "matches": [
-        "<all_urls>"
-      ],
-      "js": [
-        "js/vendor.js",
-        "js/content_script.js"
-      ]
-    }
-  ],
   "background": {
-    "page": "background.html"
+    "scripts": [
+      "js/background.js",
+      "js/vendor.js",
+      "js/google.api.js"
+    ]
   },
   "permissions": [
     "identity",
     "identity.email",
     "storage",
     "bookmarks",
-    "*://apis.google.com/*",
-    "<all_urls>"
+    "tabs"
   ],
   "content_security_policy": "script-src 'self' https://apis.google.com; object-src 'self'",
   "oauth2": {
