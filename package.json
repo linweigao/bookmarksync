@@ -6,7 +6,8 @@
   "scripts": {
     "start": "webpack-dev-server --config webpack/webpack.dev.js",
     "dev": "webpack --config webpack/webpack.dev.js",
-    "build": "webpack --config webpack/webpack.prod.js"
+    "build": "webpack --config webpack/webpack.prod.js",
+    "reactdev": "react-devtools"
   },
   "author": "",
   "license": "MIT",
@@ -30,6 +31,7 @@
     "copy-webpack-plugin": "^4.5.2",
     "css-loader": "^1.0.0",
     "less-loader": "^4.1.0",
+    "react-devtools": "^3.2.3",
     "react-hot-loader": "^4.3.3",
     "style-loader": "^0.21.0",
     "ts-import-plugin": "^1.5.4",

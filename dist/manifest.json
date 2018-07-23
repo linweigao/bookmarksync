@@ -26,7 +26,7 @@
     "bookmarks",
     "tabs"
   ],
-  "content_security_policy": "script-src 'self' https://apis.google.com; object-src 'self'",
+  "content_security_policy": "script-src 'self' https://apis.google.com http://localhost:8097; object-src 'self'",
   "oauth2": {
     "client_id": "597462414540-6nqgr603j0ustq902diun46bo9ugihla.apps.googleusercontent.com",
     "scopes": [

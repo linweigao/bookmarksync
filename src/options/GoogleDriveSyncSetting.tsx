@@ -35,10 +35,10 @@ class GoogleDriveSyncCard extends React.PureComponent<IGoogleDriveSyncCardProps>
   }
 
   render() {
-    const del = <Tooltip placement="top" title='Remove Sync Folder'>
+    const del = <Tooltip key='remove' placement="top" title='Remove Sync Folder'>
       <Button type='danger' shape='circle' icon='delete' style={{ marginRight: '5px' }} onClick={this.onDelClick} />
     </Tooltip>
-    const sync = <Tooltip placement="top" title='Sync Now'>
+    const sync = <Tooltip key='sync' placement="top" title='Sync Now'>
       <Button type='primary' icon='sync' shape='circle' onClick={this.onSyncClick} />
     </Tooltip>
     const extra = [del, sync]
