@@ -1,13 +1,19 @@
 import * as React from 'react'
 import * as ReactDom from 'react-dom'
-import { Card, Layout, Menu, Icon, Button } from 'antd';
+import { Layout, Menu, Icon, Button } from 'antd';
 const { Header, Sider, Content, Footer } = Layout;
-import 'antd/es/card/style/index.css';
+import 'antd/es/card/style/css.js';
 import 'antd/es/icon/style/css.js';
-import 'antd/es/layout/style/index.css';
-import 'antd/es/menu/style/index.css';
-import 'antd/es/button/style/index.css';
-import 'antd/es/modal/style/index.css';
+import 'antd/es/layout/style/css.js';
+import 'antd/es/menu/style/css.js';
+import 'antd/es/button/style/css.js';
+import 'antd/es/modal/style/css.js';
+import 'antd/es/col/style/css.js';
+import 'antd/es/row/style/css.js';
+import 'antd/es/form/style/css.js';
+import 'antd/es/radio/style/css.js';
+import 'antd/es/input/style/css.js';
+import 'antd/es/tooltip/style/css.js';
 
 import GoogleDriveSyncSetting from './GoogleDriveSyncSetting'
 
@@ -21,7 +27,7 @@ class Options extends React.Component<{}> {
           </div>
           <Menu theme="dark" mode="inline" defaultSelectedKeys={['1']}>
             <Menu.Item key="1">
-              <Icon type="user" />
+              <Icon type="google" />
               <span>Google Drive</span>
             </Menu.Item>
           </Menu>

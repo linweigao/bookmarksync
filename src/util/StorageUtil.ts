@@ -12,9 +12,9 @@ export default class StorageUtil {
   static getGoogleDriveSyncOptions(): Promise<IGoogleDriveSyncOption[]> {
     return new Promise<IGoogleDriveSyncOption[]>(resolve => {
       chrome.storage.sync.get(['GoogleDriveSyncOptions'], (result) => {
-        if (result.key) {
+        if (result.GoogleDriveSyncOptions) {
           try {
-            const options = JSON.parse(result.key)
+            const options = JSON.parse(result.GoogleDriveSyncOptions)
             resolve(options)
           }
           catch (err) {

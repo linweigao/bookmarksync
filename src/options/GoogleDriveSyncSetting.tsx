@@ -1,5 +1,7 @@
 import * as React from 'react'
-import { Card, Button } from 'antd'
+import { Col, Card, Button, Row, Icon, Tooltip } from 'antd'
+import * as moment from 'moment';
+import * as assign from 'object-assign'
 
 import ChromeAuthUtil from '../util/ChromeAuthUtil'
 import GoogleApiUtil from '../util/GoogleApiUtil'
@@ -13,23 +15,42 @@ interface IGoogleDriveSyncSettingState {
   token?: string;
   userId?: string;
   options?: IGoogleDriveSyncOption[];
-  currentOption?: IGoogleDriveSyncOption;
+  folders?: { folderId: string, folderName: string }[];
+  showModal: boolean;
 }
 
 interface IGoogleDriveSyncCardProps {
   option: IGoogleDriveSyncOption
+  onRemoveOption: (option: IGoogleDriveSyncOption) => void
+  onResyncOption: (option: IGoogleDriveSyncOption) => void
 }
 
-const gridStyle = {
-  width: '33%',
-};
-
 class GoogleDriveSyncCard extends React.PureComponent<IGoogleDriveSyncCardProps> {
+  onDelClick = e => {
+    this.props.onRemoveOption(this.props.option)
+  }
+
+  onSyncClick = e => {
+    this.props.onResyncOption(this.props.option)
+  }
+
   render() {
+    const del = <Tooltip placement="top" title='Remove Sync Folder'>
+      <Button type='danger' shape='circle' icon='delete' style={{ marginRight: '5px' }} onClick={this.onDelClick} />
+    </Tooltip>
+    const sync = <Tooltip placement="top" title='Sync Now'>
+      <Button type='primary' icon='sync' shape='circle' onClick={this.onSyncClick} />
+    </Tooltip>
+    const extra = [del, sync]
+    const lastSyncTime = 'Last sync time: ' + moment(this.props.option.lastSyncTime).fromNow()
+    const syncTo = 'Sync to ' + this.props.option.bookmarkName
     return (
-      <Card.Grid style={gridStyle}>
-        <Card type='inner' title={this.props.option.bookmarkName}></Card>
-      </Card.Grid>
+      <Card title={this.props.option.folderName} extra={extra}>
+        <Card.Meta
+          title={syncTo}
+          description={lastSyncTime}
+        />
+      </Card>
     )
   }
 }
@@ -38,16 +59,15 @@ class GoogleDriveSyncSetting extends React.PureComponent<{}, IGoogleDriveSyncSet
   constructor(props: {}) {
     super(props);
     this.state = {
+      showModal: false
     }
-
-    this.addSyncFolder = this.addSyncFolder.bind(this)
-    this.onSyncFolder = this.onSyncFolder.bind(this)
   }
 
   async componentWillMount() {
     await GoogleApiUtil.load('client')
     await GoogleApiUtil.clientLoad('drive', 'v3')
-    const googleDriveSyncOptions = await StorageUtil.getGoogleDriveSyncOptions();
+    let googleDriveSyncOptions = await StorageUtil.getGoogleDriveSyncOptions();
+    googleDriveSyncOptions = googleDriveSyncOptions.filter(opt => !!opt)
     this.setState({ options: googleDriveSyncOptions })
 
     let token, userId
@@ -65,7 +85,7 @@ class GoogleDriveSyncSetting extends React.PureComponent<{}, IGoogleDriveSyncSet
     }
   }
 
-  async addSyncFolder() {
+  addSyncFolder = async () => {
     let userId = this.state.userId;
     let token = this.state.token;
     if (!token) {
@@ -75,23 +95,50 @@ class GoogleDriveSyncSetting extends React.PureComponent<{}, IGoogleDriveSyncSet
     }
 
     const rootFolder = await DriveSync.get('root')
-    const option: IGoogleDriveSyncOption = {
-      userId,
-      folderId: rootFolder.id,
-      folderName: rootFolder.name
-    }
-    this.setState({ token, userId, currentOption: option })
+    this.setState({ token, userId, showModal: true, folders: [{ folderId: rootFolder.id, folderName: rootFolder.name }] })
   }
 
-  async onSyncFolder(option: IGoogleDriveSyncOption) {
+  onAddSyncFolder = async (folderId: string, folderName: string, bookmarkName: string) => {
+    const option: IGoogleDriveSyncOption = {
+      userId: this.state.userId,
+      folderId,
+      folderName,
+      bookmarkName,
+      lastSyncTime: new Date()
+    }
     await DriveSync.syncDrive();
 
     const options = this.state.options ? [...this.state.options, option] : [option];
-    this.setState({ options, currentOption: null })
+    await StorageUtil.setGoogleDriveSyncOptions(options)
+    this.setState({ options, showModal: false })
   }
 
-  onCancelSyncFolder() {
-    this.setState({ currentOption: null })
+  onReSyncFolder = async (option: IGoogleDriveSyncOption) => {
+    const newOption = assign({}, option)
+    console.log(newOption)
+    await DriveSync.syncDrive();
+    const options = this.state.options.map(o => {
+      if (o === option) {
+        return newOption
+      }
+    })
+
+    console.log(options);
+
+    await StorageUtil.setGoogleDriveSyncOptions(options)
+    this.setState({ options })
+  }
+
+  onCancelSyncFolder = () => {
+    this.setState({ showModal: false })
+  }
+
+  onRemoveSync = async (option: IGoogleDriveSyncOption) => {
+    const options = this.state.options.slice()
+    const index = options.indexOf(option)
+    options.splice(index, 1)
+    await StorageUtil.setGoogleDriveSyncOptions(options)
+    this.setState({ options })
   }
 
   async loginGoogle(interactive: boolean = true) {
@@ -109,22 +156,30 @@ class GoogleDriveSyncSetting extends React.PureComponent<{}, IGoogleDriveSyncSet
   }
 
   render() {
-    const cards = this.state.token && this.state.options && this.state.options.map(option => {
-      <GoogleDriveSyncCard option={option} />
+    const cards = this.state.token && this.state.options && this.state.options.map((option, index) => {
+      return (
+        <Col key={index} span={8}>
+          <GoogleDriveSyncCard
+            key={index}
+            option={option}
+            onRemoveOption={this.onRemoveSync}
+            onResyncOption={this.onReSyncFolder} />
+        </Col>
+      )
     })
 
     return (
-      <div>
-        <Card title='Google Drive Sync Setting'>
+      <div style={{ background: '#ECECEC', padding: '30px' }}>
+        <Row gutter={16} >
           {cards}
-          <Card.Grid style={gridStyle}>
+          <Col span={8}>
             <Button type='primary' onClick={this.addSyncFolder}>Select your drive to sync</Button>
-          </Card.Grid>
-        </Card>
+          </Col>
+        </Row>
         <GoogleDriveModal
-          visible={!!this.state.currentOption}
-          option={this.state.currentOption}
-          onSync={this.onSyncFolder}
+          visible={this.state.showModal}
+          folders={this.state.folders}
+          onSync={this.onAddSyncFolder}
           onCancel={this.onCancelSyncFolder} />
       </div>
     )
