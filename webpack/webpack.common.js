@@ -5,7 +5,7 @@ const tsImportPluginFactory = require('ts-import-plugin')
 
 module.exports = {
     entry: {
-        options: path.join(__dirname, '../src/options/Options.tsx'),
+        options: path.join(__dirname, '../src/options.ts'),
         popup: path.join(__dirname, '../src/popup.ts'),
         background: path.join(__dirname, '../src/background.ts'),
         content_script: path.join(__dirname, '../src/content_script.ts')

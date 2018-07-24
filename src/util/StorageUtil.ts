@@ -1,4 +1,4 @@
-import IGoogleDriveSyncOption from '../common/GoogleDriveSyncOption'
+import { IGoogleDriveSyncOption } from '../options/GoogleDrive'
 
 export default class StorageUtil {
   static setGoogleDriveSyncOptions(syncOptions: IGoogleDriveSyncOption[]): Promise<void> {

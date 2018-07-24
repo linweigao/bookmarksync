@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { Modal, Button, Form, Input, Radio, Icon } from 'antd';
 
-import IGoogleDriveSyncOption from '../common/GoogleDriveSyncOption'
+import IGoogleDriveSyncOption from './SyncOption'
 
 interface IGoogleDriveOptionProps {
   visible: boolean;
@@ -111,6 +111,4 @@ export default class GoogleDriveModal extends React.PureComponent<IGoogleDriveOp
       </Modal>
     );
   }
-
 }
-

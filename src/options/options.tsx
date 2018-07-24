@@ -15,7 +15,7 @@ import 'antd/es/radio/style/css.js';
 import 'antd/es/input/style/css.js';
 import 'antd/es/tooltip/style/css.js';
 
-import GoogleDriveSyncSetting from './GoogleDriveSyncSetting'
+import GoogleDrivePanel from './GoogleDrive'
 
 class Options extends React.Component<{}> {
   render() {
@@ -34,7 +34,7 @@ class Options extends React.Component<{}> {
         </Sider>
         <Layout>
           <Content style={{ margin: '24px 16px', padding: 24, background: '#fff', minHeight: 280 }}>
-            <GoogleDriveSyncSetting />
+            <GoogleDrivePanel />
           </Content>
           <Footer style={{ textAlign: 'center' }}>
             Bookmark Sync ©2018 Created by 120 Studio
