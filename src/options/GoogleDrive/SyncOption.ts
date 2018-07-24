@@ -3,5 +3,6 @@ export default interface IGoogleDriveSyncOption {
   folderId: string;
   folderName: string;
   bookmarkName?: string;
+  bookmarkId?: string;
   lastSyncTime?: Date;
 }

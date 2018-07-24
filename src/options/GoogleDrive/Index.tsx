@@ -5,7 +5,8 @@ import * as assign from 'object-assign'
 import ChromeAuthUtil from '../../util/ChromeAuthUtil'
 import GoogleApiUtil from '../../util/GoogleApiUtil'
 import StorageUtil from '../../util/StorageUtil'
-import DriveSync from '../../DriveSync'
+import GoogleDriveUtil from '../../util/GoogleDriveUtil'
+import GoogleDriveSync from '../../util/GoogleDriveSync'
 
 import IGoogleDriveSyncOption from './SyncOption'
 import GoogleDriveModal from './Modal'
@@ -41,7 +42,7 @@ export default class GoogleDrivePanel extends React.PureComponent<{}, IGoogleDri
       const result = await this.loginGoogle(false)
       token = result.token
       userId = result.userId
-      const rootFolder = await DriveSync.get('root')
+      const rootFolder = await GoogleDriveUtil.get('root')
       this.setState({ token, userId })
     }
     catch (ex) {
@@ -60,7 +61,7 @@ export default class GoogleDrivePanel extends React.PureComponent<{}, IGoogleDri
       token = result.token
     }
 
-    const rootFolder = await DriveSync.get('root')
+    const rootFolder = await GoogleDriveUtil.get('root')
     this.setState({ token, userId, showModal: true, folders: [{ folderId: rootFolder.id, folderName: rootFolder.name }] })
   }
 
@@ -69,10 +70,9 @@ export default class GoogleDrivePanel extends React.PureComponent<{}, IGoogleDri
       userId: this.state.userId,
       folderId,
       folderName,
-      bookmarkName,
-      lastSyncTime: new Date()
+      bookmarkName
     }
-    await DriveSync.syncDrive();
+    await GoogleDriveSync.syncDrive(option);
 
     const options = this.state.options ? [...this.state.options, option] : [option];
     await StorageUtil.setGoogleDriveSyncOptions(options)
@@ -81,15 +81,12 @@ export default class GoogleDrivePanel extends React.PureComponent<{}, IGoogleDri
 
   onReSyncFolder = async (option: IGoogleDriveSyncOption) => {
     const newOption = assign({}, option)
-    console.log(newOption)
-    await DriveSync.syncDrive();
+    await GoogleDriveSync.syncDrive(newOption);
     const options = this.state.options.map(o => {
       if (o === option) {
         return newOption
       }
     })
-
-    console.log(options);
 
     await StorageUtil.setGoogleDriveSyncOptions(options)
     this.setState({ options })
