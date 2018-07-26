@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { Col, Card, Button, Row, Icon, Tooltip } from 'antd'
+import { Col, Card, Button, Row, Icon, Tooltip, Dropdown, Menu } from 'antd'
 import * as assign from 'object-assign'
 
 import ChromeAuthUtil from '../../util/ChromeAuthUtil'
@@ -12,9 +12,13 @@ import IGoogleDriveSyncOption from './SyncOption'
 import GoogleDriveModal from './Modal'
 import GoogleDriveSyncCard from './Card'
 
-interface IGoogleDriveSyncSettingState {
+interface IGoogleDriveSettingProps {
+  onAccountChange: (account: React.ReactNode) => void
+}
+
+interface IGoogleDriveSettingState {
   token?: string;
-  userId?: string;
+  user?: { id: string, email: string }
   options?: IGoogleDriveSyncOption[];
   folders?: { folderId: string, folderName: string }[];
   showModal: boolean;
@@ -22,8 +26,8 @@ interface IGoogleDriveSyncSettingState {
 
 export { IGoogleDriveSyncOption }
 
-export default class GoogleDrivePanel extends React.PureComponent<{}, IGoogleDriveSyncSettingState> {
-  constructor(props: {}) {
+export default class GoogleDrivePanel extends React.PureComponent<IGoogleDriveSettingProps, IGoogleDriveSettingState> {
+  constructor(props: IGoogleDriveSettingProps) {
     super(props);
     this.state = {
       showModal: false
@@ -37,37 +41,43 @@ export default class GoogleDrivePanel extends React.PureComponent<{}, IGoogleDri
     googleDriveSyncOptions = googleDriveSyncOptions.filter(opt => !!opt)
     this.setState({ options: googleDriveSyncOptions })
 
-    let token, userId
+    let token, user
     try {
       const result = await this.loginGoogle(false)
       token = result.token
-      userId = result.userId
+      user = result.user
       const rootFolder = await GoogleDriveUtil.get('root')
-      this.setState({ token, userId })
+      this.setState({ token, user }, () => {
+        this.props.onAccountChange(this.createAccountNode(user.email))
+      })
+
     }
     catch (ex) {
       if (token && ex.code === 401) {
         await ChromeAuthUtil.removeCachedAuthToken(token)
       }
+      this.props.onAccountChange(this.createAccountNode(null))
     }
   }
 
   addSyncFolder = async () => {
-    let userId = this.state.userId;
+    let user = this.state.user;
     let token = this.state.token;
     if (!token) {
       const result = await this.loginGoogle(true)
-      userId = result.userId
+      user = result.user
       token = result.token
     }
 
     const rootFolder = await GoogleDriveUtil.get('root')
-    this.setState({ token, userId, showModal: true, folders: [{ folderId: rootFolder.id, folderName: rootFolder.name }] })
+    this.setState({ token, user, showModal: true, folders: [{ folderId: rootFolder.id, folderName: rootFolder.name }] }, () => {
+      this.props.onAccountChange(this.createAccountNode(user.email))
+    })
   }
 
   onAddSyncFolder = async (folderId: string, folderName: string, bookmarkName: string) => {
     const option: IGoogleDriveSyncOption = {
-      userId: this.state.userId,
+      userId: this.state.user.id,
       folderId,
       folderName,
       bookmarkName
@@ -106,16 +116,72 @@ export default class GoogleDrivePanel extends React.PureComponent<{}, IGoogleDri
 
   async loginGoogle(interactive: boolean = true) {
     const token = await ChromeAuthUtil.getAuthToken(interactive)
-    const userId = await ChromeAuthUtil.getProfileUserInfo();
+    const user = await ChromeAuthUtil.getProfileUserInfo();
     GoogleApiUtil.setAuth(token)
-    console.log(token, userId);
-    return { token, userId }
+    console.log(token, user);
+    return { token, user }
+
+  }
+
+  onAccountMenuClick = async (param) => {
+    if (param.key === 'logout') {
+      await this.onLogout()
+    }
+    else if (param.key === 'switch') {
+      await this.switchAccount()
+    }
+    else {
+      console.error('unknown key', param)
+    }
+  }
+
+  onLogin = async () => {
+    const { user, token } = await this.loginGoogle(true)
+    this.setState({ token, user }, () => {
+      this.props.onAccountChange(this.createAccountNode(user.email))
+    })
+  }
+
+  onLogout = async () => {
+    await ChromeAuthUtil.revokeToken(this.state.token)
+    await ChromeAuthUtil.removeCachedAuthToken(this.state.token)
+    this.setState({ token: null, user: null, options: null }, () => {
+      this.props.onAccountChange(this.createAccountNode(null))
+    })
   }
 
   async switchAccount() {
     await ChromeAuthUtil.revokeToken(this.state.token)
     await ChromeAuthUtil.removeCachedAuthToken(this.state.token)
-    await this.loginGoogle(true)
+    await this.onLogin()
+  }
+
+  private createAccountNode(name: string) {
+    if (!name) {
+      return <span style={{ paddingRight: '20px' }} onClick={this.onLogin} >
+        <Icon type='google' />
+        <span>Login</span>
+      </span>
+    }
+
+    const menu = (
+      <Menu onClick={this.onAccountMenuClick}>
+        <Menu.Item key='switch'>
+          <Icon type='swap' />Switch Account
+        </Menu.Item>
+        <Menu.Divider />
+        <Menu.Item key='logout' >
+          <Icon type='logout' />logout
+        </Menu.Item>
+      </Menu>
+    );
+
+    return (<Dropdown overlay={menu} >
+      <span style={{ paddingRight: '20px' }} >
+        <Icon type='google' />
+        <span>{name}</span>
+      </span>
+    </Dropdown >)
   }
 
   render() {

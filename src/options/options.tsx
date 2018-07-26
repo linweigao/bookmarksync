@@ -14,10 +14,26 @@ import 'antd/es/form/style/css.js';
 import 'antd/es/radio/style/css.js';
 import 'antd/es/input/style/css.js';
 import 'antd/es/tooltip/style/css.js';
+import 'antd/es/dropdown/style/css.js';
 
 import GoogleDrivePanel from './GoogleDrive'
 
-class Options extends React.Component<{}> {
+interface IOptionsState {
+  googleAccount: React.ReactNode;
+}
+
+class Options extends React.Component<{}, IOptionsState> {
+  constructor(props: {}) {
+    super(props);
+    this.state = {
+      googleAccount: null
+    }
+  }
+
+  googleAccountChange = (account) => {
+    this.setState({ googleAccount: account })
+  }
+
   render() {
     return (
       <Layout style={{ height: '100vh' }}>
@@ -33,8 +49,13 @@ class Options extends React.Component<{}> {
           </Menu>
         </Sider>
         <Layout>
+          <Header style={{ background: '#fff', padding: 0 }}>
+            <div style={{ float: 'right' }}>
+              {this.state.googleAccount}
+            </div>
+          </Header>
           <Content style={{ margin: '24px 16px', padding: 24, background: '#fff', minHeight: 280 }}>
-            <GoogleDrivePanel />
+            <GoogleDrivePanel onAccountChange={this.googleAccountChange} />
           </Content>
           <Footer style={{ textAlign: 'center' }}>
             Bookmark Sync ©2018 Created by 120 Studio

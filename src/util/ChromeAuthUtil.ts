@@ -13,12 +13,11 @@ export default class ChromeAuthUtil {
     })
   }
 
-  static getProfileUserInfo(): Promise<string> {
-    return new Promise<string>((resolve, reject) => {
+  static getProfileUserInfo(): Promise<chrome.identity.UserInfo> {
+    return new Promise<chrome.identity.UserInfo>((resolve, reject) => {
       chrome.identity.getProfileUserInfo(userInfo => {
-        console.log(userInfo)
         if (userInfo && userInfo.id) {
-          resolve(userInfo.id)
+          resolve(userInfo)
         }
         else {
           reject("cannot get user info")
