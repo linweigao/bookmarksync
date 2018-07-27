@@ -2,7 +2,7 @@ import * as React from 'react'
 import { Card, Button, Tooltip } from 'antd'
 import * as moment from 'moment';
 
-import IGoogleDriveSyncOption from './SyncOption'
+import { IGoogleDriveSyncOption } from './SyncOption'
 
 interface ISyncCardProps {
   option: IGoogleDriveSyncOption
@@ -30,7 +30,7 @@ export default class GoogleDriveSyncCard extends React.PureComponent<ISyncCardPr
     const lastSyncTime = 'Last sync time: ' + moment(this.props.option.lastSyncTime).fromNow()
     const syncTo = 'Sync to ' + this.props.option.bookmarkName
     return (
-      <Card title={this.props.option.folderName} extra={extra}>
+      <Card title={this.props.option.folder.name} extra={extra}>
         <Card.Meta
           title={syncTo}
           description={lastSyncTime}

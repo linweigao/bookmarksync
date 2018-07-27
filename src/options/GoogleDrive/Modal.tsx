@@ -1,18 +1,17 @@
 import * as React from 'react'
 import { Modal, Button, Form, Input, Radio, Icon } from 'antd';
 
-import IGoogleDriveSyncOption from './SyncOption'
+import { IGoogleDriveFolder } from './SyncOption'
 
 interface IGoogleDriveOptionProps {
   visible: boolean;
-  folders: { folderId: string, folderName: string }[];
-  onSync: (folderId: string, folderName: string, bookmarkName: string) => Promise<any>;
+  folders: IGoogleDriveFolder[];
+  onSync: (folder: IGoogleDriveFolder, bookmarkName: string) => Promise<any>;
   onCancel: () => void;
 }
 
 interface IGoogleDriveOptionState {
-  folderId?: string;
-  folderName?: string;
+  folder?: IGoogleDriveFolder;
   bookmarkName?: string;
   isSyncing?: boolean;
 }
@@ -37,8 +36,7 @@ export default class GoogleDriveModal extends React.PureComponent<IGoogleDriveOp
 
     if (props.folders && props.folders.length > 0) {
       this.state = {
-        folderId: props.folders[0].folderId,
-        folderName: props.folders[0].folderName
+        folder: props.folders[0]
       }
     }
     else {
@@ -48,14 +46,14 @@ export default class GoogleDriveModal extends React.PureComponent<IGoogleDriveOp
 
   componentWillReceiveProps(nextProps: IGoogleDriveOptionProps, props: IGoogleDriveOptionProps) {
     if (nextProps.folders && nextProps.folders.length > 0) {
-      this.setState({ folderId: nextProps.folders[0].folderId, folderName: nextProps.folders[0].folderName })
+      this.setState({ folder: nextProps.folders[0] })
     }
   }
 
   onFolderChange = (e) => {
     const folderId = e.target.value
-    const folderName = this.props.folders.find(folder => folder.folderId === folderId).folderName;
-    this.setState({ folderId, folderName })
+    const folder = this.props.folders.find(folder => folder.id === folderId);
+    this.setState({ folder })
   }
 
   onBookmarkChange = (e) => {
@@ -66,7 +64,7 @@ export default class GoogleDriveModal extends React.PureComponent<IGoogleDriveOp
   handleOk = async (e) => {
     this.setState({ isSyncing: true })
     try {
-      await this.props.onSync(this.state.folderId, this.state.folderName, this.getBookName())
+      await this.props.onSync(this.state.folder, this.getBookName())
     }
     catch (ex) {
       console.log(ex)
@@ -79,13 +77,21 @@ export default class GoogleDriveModal extends React.PureComponent<IGoogleDriveOp
   }
 
   getBookName() {
-    return this.state.bookmarkName ? this.state.bookmarkName : this.state.folderName
+    if (this.state.bookmarkName) {
+      return this.state.bookmarkName
+    }
+
+    return this.state.folder && this.state.folder.name
   }
 
   render() {
+    if (!this.props.visible) {
+      return <div />
+    }
+
     const bookmarkName = this.getBookName()
     const folders = this.props.folders && this.props.folders.map(folder => {
-      return <Radio.Button value={folder.folderId}>{folder.folderName}</Radio.Button>
+      return <Radio.Button value={folder.id}>{folder.name}</Radio.Button>
     })
 
     return (
@@ -100,7 +106,7 @@ export default class GoogleDriveModal extends React.PureComponent<IGoogleDriveOp
       >
         <Form>
           <Form.Item {...formItemLayout} label='Folder to sync'>
-            <Radio.Group onChange={this.onFolderChange} value={this.state.folderId}>
+            <Radio.Group onChange={this.onFolderChange} value={this.state.folder.id}>
               {folders}
             </Radio.Group>
           </Form.Item>

@@ -1,8 +1,13 @@
-export default interface IGoogleDriveSyncOption {
+export interface IGoogleDriveSyncOption {
   userId: string;
-  folderId: string;
-  folderName: string;
+  folder: IGoogleDriveFolder;
   bookmarkName?: string;
   bookmarkId?: string;
   lastSyncTime?: Date;
+}
+
+export interface IGoogleDriveFolder {
+  id: string;
+  name: string;
+  kind: string;
 }

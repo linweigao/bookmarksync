@@ -10,31 +10,37 @@ interface IDriveTree {
 
 const fileFields = 'nextPageToken, files(kind, id, name, mimeType, parents, webViewLink)'
 const folderMimeType = 'application/vnd.google-apps.folder'
+const TeamDriveKind = 'drive#teamDrive'
 
 export default class GoogleDriveSync {
   // TODO: sharedWithMe = false doesn't work.
-  public static getFolders(): Promise<IDriveFile[]> {
-    return GoogleDriveUtil.list({
-      fields: fileFields,
-      q: "mimeType='application/vnd.google-apps.folder' and trashed = false"
-    })
+  public static getFolders(options): Promise<IDriveFile[]> {
+    options.fields = fileFields
+    options.q = "mimeType='application/vnd.google-apps.folder' and trashed = false"
+    return GoogleDriveUtil.list(options)
   }
 
-  public static getFilesUnderFolders(folderIDs: string[]): Promise<IDriveFile[]> {
+  public static getFilesUnderFolders(folderIDs: string[], options): Promise<IDriveFile[]> {
     const folderQuery = '(' + folderIDs.map(id => `'${id}' in parents`).join(' or ') + ')'
     const typeQuery = "mimeType!='application/vnd.google-apps.folder'"
-    console.log(folderQuery)
-    return GoogleDriveUtil.list({
-      fields: fileFields,
-      q: typeQuery + ' and trashed = false and ' + folderQuery
-    })
+    options.fields = fileFields
+    options.q = typeQuery + ' and trashed = false and ' + folderQuery
+    return GoogleDriveUtil.list(options)
   }
 
-  public static async tree(): Promise<IDriveTree> {
+  public static async tree(option: IGoogleDriveSyncOption): Promise<IDriveTree> {
     const map = new Map<string, IDriveFile[]>();
-    const root = await GoogleDriveUtil.get('root');
+    const root = option.folder
+    const queryOptions: any = { corpora: 'user' }
+    if (option.folder.kind === TeamDriveKind) {
+      queryOptions.corpora = 'teamDrive'
+      queryOptions.includeTeamDriveItems = true
+      queryOptions.supportsTeamDrives = true
+      queryOptions.teamDriveId = option.folder.id
+    }
+
     map.set(root.id, null)
-    const folders = await this.getFolders();
+    const folders = await this.getFolders(queryOptions);
     folders.forEach(folder => {
       if (!folder.parents || folder.parents.length == 0) {
         // 'Shared with me' file
@@ -48,7 +54,7 @@ export default class GoogleDriveSync {
     })
 
     const folderIds = folders.concat(root).map(folder => folder.id)
-    const files = await this.getFilesUnderFolders(folderIds)
+    const files = await this.getFilesUnderFolders(folderIds, queryOptions)
     files.forEach(file => {
       if (!file.parents || file.parents.length == 0) {
         // 'Shared with me' file 
@@ -92,7 +98,7 @@ export default class GoogleDriveSync {
       option.bookmarkId = targetFolder.id
     }
 
-    const { root, map } = await this.tree()
+    const { root, map } = await this.tree(option)
     await BookmarkUtil.removeChildren(targetFolder)
 
     const children = map.get(root.id);

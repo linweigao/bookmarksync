@@ -1,3 +1,5 @@
+import { resolve } from "url";
+
 declare var gapi;
 
 interface IDriveChange {
@@ -14,9 +16,20 @@ interface IDriveFile {
   kind: string,
   id: string,
   name: string,
-  mimeType: string,
-  parents: string[],
-  webViewLink: string
+  mimeType?: string,
+  parents?: string[],
+  webViewLink?: string
+}
+
+interface ITeamDriveList {
+  teamDrives: ITeamDrive[],
+  nextPageToken: string
+}
+
+interface ITeamDrive {
+  kind: string,
+  id: string,
+  name: string
 }
 
 export { IDriveFile }
@@ -72,6 +85,20 @@ export default class GoogleDriveUtil {
           }
           else {
             resolve(res)
+          }
+        })
+    })
+  }
+
+  public static teamDriveList(): Promise<ITeamDriveList> {
+    return new Promise<ITeamDriveList>((resolve, reject) => {
+      gapi.client.drive.teamdrives.list()
+        .execute(res => {
+          if (res.error) {
+            reject(res.error)
+          }
+          else {
+            resolve(res.result)
           }
         })
     })

@@ -8,7 +8,7 @@ import StorageUtil from '../../util/StorageUtil'
 import GoogleDriveUtil from '../../util/GoogleDriveUtil'
 import GoogleDriveSync from '../../util/GoogleDriveSync'
 
-import IGoogleDriveSyncOption from './SyncOption'
+import { IGoogleDriveSyncOption, IGoogleDriveFolder } from './SyncOption'
 import GoogleDriveModal from './Modal'
 import GoogleDriveSyncCard from './Card'
 
@@ -20,7 +20,7 @@ interface IGoogleDriveSettingState {
   token?: string;
   user?: { id: string, email: string }
   options?: IGoogleDriveSyncOption[];
-  folders?: { folderId: string, folderName: string }[];
+  folders?: IGoogleDriveFolder[];
   showModal: boolean;
 }
 
@@ -38,7 +38,7 @@ export default class GoogleDrivePanel extends React.PureComponent<IGoogleDriveSe
     await GoogleApiUtil.load('client')
     await GoogleApiUtil.clientLoad('drive', 'v3')
     let googleDriveSyncOptions = await StorageUtil.getGoogleDriveSyncOptions();
-    googleDriveSyncOptions = googleDriveSyncOptions.filter(opt => !!opt)
+    googleDriveSyncOptions = googleDriveSyncOptions.filter(opt => !!opt && !!opt.folder)
     this.setState({ options: googleDriveSyncOptions })
 
     let token, user
@@ -46,7 +46,6 @@ export default class GoogleDrivePanel extends React.PureComponent<IGoogleDriveSe
       const result = await this.loginGoogle(false)
       token = result.token
       user = result.user
-      const rootFolder = await GoogleDriveUtil.get('root')
       this.setState({ token, user }, () => {
         this.props.onAccountChange(this.createAccountNode(user.email))
       })
@@ -61,25 +60,25 @@ export default class GoogleDrivePanel extends React.PureComponent<IGoogleDriveSe
   }
 
   addSyncFolder = async () => {
-    let user = this.state.user;
-    let token = this.state.token;
-    if (!token) {
-      const result = await this.loginGoogle(true)
-      user = result.user
-      token = result.token
+    let folders = this.state.folders
+    if (!folders) {
+      const rootFolder = await GoogleDriveUtil.get('root')
+      const teamDrives = await GoogleDriveUtil.teamDriveList();
+      folders = [{ id: rootFolder.id, name: rootFolder.name, kind: rootFolder.kind }]
+      if (teamDrives.teamDrives && teamDrives.teamDrives.length > 0) {
+        teamDrives.teamDrives.forEach(teamDrive => {
+          folders.push({ id: teamDrive.id, name: teamDrive.name, kind: teamDrive.kind })
+        })
+      }
     }
 
-    const rootFolder = await GoogleDriveUtil.get('root')
-    this.setState({ token, user, showModal: true, folders: [{ folderId: rootFolder.id, folderName: rootFolder.name }] }, () => {
-      this.props.onAccountChange(this.createAccountNode(user.email))
-    })
+    this.setState({ showModal: true, folders })
   }
 
-  onAddSyncFolder = async (folderId: string, folderName: string, bookmarkName: string) => {
+  onAddSyncFolder = async (folder: IGoogleDriveFolder, bookmarkName: string) => {
     const option: IGoogleDriveSyncOption = {
       userId: this.state.user.id,
-      folderId,
-      folderName,
+      folder,
       bookmarkName
     }
     await GoogleDriveSync.syncDrive(option);
@@ -116,6 +115,7 @@ export default class GoogleDrivePanel extends React.PureComponent<IGoogleDriveSe
 
   async loginGoogle(interactive: boolean = true) {
     const token = await ChromeAuthUtil.getAuthToken(interactive)
+    // TODO: replace with people.get('people/me')
     const user = await ChromeAuthUtil.getProfileUserInfo();
     GoogleApiUtil.setAuth(token)
     console.log(token, user);
