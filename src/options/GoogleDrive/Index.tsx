@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { Col, Card, Button, Row, Icon, Tooltip, Dropdown, Menu } from 'antd'
+import { Col, Button, Row, Icon, Dropdown, Menu, message } from 'antd'
 import * as assign from 'object-assign'
 
 import ChromeAuthUtil from '../../util/ChromeAuthUtil'
@@ -21,7 +21,10 @@ interface IGoogleDriveSettingState {
   user?: { id: string, email: string }
   options?: IGoogleDriveSyncOption[];
   folders?: IGoogleDriveFolder[];
+
+  // Status
   showModal: boolean;
+  syncingOptions: IGoogleDriveSyncOption[];
 }
 
 export { IGoogleDriveSyncOption }
@@ -30,7 +33,8 @@ export default class GoogleDrivePanel extends React.PureComponent<IGoogleDriveSe
   constructor(props: IGoogleDriveSettingProps) {
     super(props);
     this.state = {
-      showModal: false
+      showModal: false,
+      syncingOptions: []
     }
   }
 
@@ -39,6 +43,7 @@ export default class GoogleDrivePanel extends React.PureComponent<IGoogleDriveSe
     await GoogleApiUtil.clientLoad('drive', 'v3')
     let googleDriveSyncOptions = await StorageUtil.getGoogleDriveSyncOptions();
     googleDriveSyncOptions = googleDriveSyncOptions.filter(opt => !!opt && !!opt.folder)
+    console.log(googleDriveSyncOptions)
     this.setState({ options: googleDriveSyncOptions })
 
     let token, user
@@ -59,7 +64,7 @@ export default class GoogleDrivePanel extends React.PureComponent<IGoogleDriveSe
     }
   }
 
-  addSyncFolder = async () => {
+  onAddSyncFolder = async () => {
     let folders = this.state.folders
     if (!folders) {
       const rootFolder = await GoogleDriveUtil.get('root')
@@ -75,30 +80,40 @@ export default class GoogleDrivePanel extends React.PureComponent<IGoogleDriveSe
     this.setState({ showModal: true, folders })
   }
 
-  onAddSyncFolder = async (folder: IGoogleDriveFolder, bookmarkName: string) => {
+  onSyncFolder = async (folder: IGoogleDriveFolder, bookmarkName: string) => {
     const option: IGoogleDriveSyncOption = {
       userId: this.state.user.id,
       folder,
       bookmarkName
     }
-    await GoogleDriveSync.syncDrive(option);
 
     const options = this.state.options ? [...this.state.options, option] : [option];
-    await StorageUtil.setGoogleDriveSyncOptions(options)
+    await this.syncFolder(option, options)
     this.setState({ options, showModal: false })
   }
 
   onReSyncFolder = async (option: IGoogleDriveSyncOption) => {
+    const newSyncing = this.state.syncingOptions.slice()
+    newSyncing.push(option)
+    this.setState({ syncingOptions: newSyncing })
     const newOption = assign({}, option)
-    await GoogleDriveSync.syncDrive(newOption);
     const options = this.state.options.map(o => {
       if (o === option) {
         return newOption
       }
+
+      return o;
     })
 
+    await this.syncFolder(newOption, options)
+    const clearSyncing = this.state.syncingOptions.filter(o => o != option)
+    this.setState({ options, syncingOptions: clearSyncing })
+  }
+
+  private async syncFolder(option: IGoogleDriveSyncOption, options: IGoogleDriveSyncOption[]) {
+    await GoogleDriveSync.syncDrive(option);
     await StorageUtil.setGoogleDriveSyncOptions(options)
-    this.setState({ options })
+    message.success(`Google Drive - [${option.folder.name}] has been mapped to bookmark - [${option.bookmarkName}]`)
   }
 
   onCancelSyncFolder = () => {
@@ -113,12 +128,12 @@ export default class GoogleDrivePanel extends React.PureComponent<IGoogleDriveSe
     this.setState({ options })
   }
 
-  async loginGoogle(interactive: boolean = true) {
+  private async loginGoogle(interactive: boolean = true) {
     const token = await ChromeAuthUtil.getAuthToken(interactive)
     // TODO: replace with people.get('people/me')
     const user = await ChromeAuthUtil.getProfileUserInfo();
     GoogleApiUtil.setAuth(token)
-    console.log(token, user);
+    console.log(user.id, user.email);
     return { token, user }
 
   }
@@ -185,30 +200,38 @@ export default class GoogleDrivePanel extends React.PureComponent<IGoogleDriveSe
   }
 
   render() {
-    const cards = this.state.token && this.state.options && this.state.options.map((option, index) => {
-      return (
-        <Col key={index} span={8}>
-          <GoogleDriveSyncCard
-            key={index}
-            option={option}
-            onRemoveOption={this.onRemoveSync}
-            onResyncOption={this.onReSyncFolder} />
-        </Col>
-      )
-    })
+    const cards = this.state.user
+      && this.state.options
+      && this.state.options.filter(option => !!option && option.userId === this.state.user.id)
+        .map((option, index) => {
+          const isSync = this.state.syncingOptions.indexOf(option) > -1 ? true : false
+          return (
+            <Col key={index} span={8}>
+              <GoogleDriveSyncCard
+                key={index}
+                option={option}
+                isSync={isSync}
+                onRemoveOption={this.onRemoveSync}
+                onResyncOption={this.onReSyncFolder} />
+            </Col>
+          )
+        })
 
     return (
       <div style={{ background: '#ECECEC', padding: '30px' }}>
+        <div>
+          <span>Select your Google Drive folder </span>
+          {!this.state.user && <Button icon='Google' onClick={this.onLogin}>Google Signin</Button>}
+          {this.state.user && <Button icon='sync' onClick={this.onAddSyncFolder}>Sync New Drive</Button>}
+        </div>
+        <hr />
         <Row gutter={16} >
           {cards}
-          <Col span={8}>
-            <Button type='primary' onClick={this.addSyncFolder}>Select your drive to sync</Button>
-          </Col>
         </Row>
         <GoogleDriveModal
           visible={this.state.showModal}
           folders={this.state.folders}
-          onSync={this.onAddSyncFolder}
+          onSync={this.onSyncFolder}
           onCancel={this.onCancelSyncFolder} />
       </div>
     )

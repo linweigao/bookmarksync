@@ -1,5 +1,3 @@
-import { resolve } from "url";
-
 declare var gapi;
 
 interface IDriveChange {

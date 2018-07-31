@@ -90,8 +90,14 @@ export default class GoogleDriveModal extends React.PureComponent<IGoogleDriveOp
     }
 
     const bookmarkName = this.getBookName()
+    const radioStyle = {
+      display: 'block',
+      height: '30px',
+      lineHeight: '30px',
+    }
+
     const folders = this.props.folders && this.props.folders.map(folder => {
-      return <Radio.Button value={folder.id}>{folder.name}</Radio.Button>
+      return <Radio.Button style={radioStyle} value={folder.id} key={folder.id}>{folder.name}</Radio.Button>
     })
 
     return (

@@ -15,6 +15,7 @@ import 'antd/es/radio/style/css.js';
 import 'antd/es/input/style/css.js';
 import 'antd/es/tooltip/style/css.js';
 import 'antd/es/dropdown/style/css.js';
+import 'antd/es/message/style/css.js';
 
 import GoogleDrivePanel from './GoogleDrive'
 

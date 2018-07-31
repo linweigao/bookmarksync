@@ -6,6 +6,7 @@ import { IGoogleDriveSyncOption } from './SyncOption'
 
 interface ISyncCardProps {
   option: IGoogleDriveSyncOption
+  isSync?: boolean
   onRemoveOption: (option: IGoogleDriveSyncOption) => void
   onResyncOption: (option: IGoogleDriveSyncOption) => void
 }
@@ -24,7 +25,7 @@ export default class GoogleDriveSyncCard extends React.PureComponent<ISyncCardPr
       <Button type='danger' shape='circle' icon='delete' style={{ marginRight: '5px' }} onClick={this.onDelClick} />
     </Tooltip>
     const sync = <Tooltip key='sync' placement="top" title='Sync Now'>
-      <Button type='primary' icon='sync' shape='circle' onClick={this.onSyncClick} />
+      <Button type='primary' icon='sync' shape='circle' loading={this.props.isSync} onClick={this.onSyncClick} />
     </Tooltip>
     const extra = [del, sync]
     const lastSyncTime = 'Last sync time: ' + moment(this.props.option.lastSyncTime).fromNow()
