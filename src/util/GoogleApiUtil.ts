@@ -37,4 +37,22 @@ export default class GoogleApiUtil {
       })
     })
   }
+
+  static async request(options: { path: string }) {
+    return gapi.client.request(options)
+  }
+
+  static async getProfile() {
+    const resp = await this.request({ path: 'https://people.googleapis.com/v1/people/me?personFields=names' })
+    const name = resp.result.names && resp.result.names.length > 0 && resp.result.names[0]
+    if (name) {
+      return {
+        name: name.displayName,
+        id: name.metadata.source.id
+      }
+    }
+    else {
+      throw new Error('Fail to get user profile.')
+    }
+  }
 }

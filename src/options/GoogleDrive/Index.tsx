@@ -18,7 +18,7 @@ interface IGoogleDriveSettingProps {
 
 interface IGoogleDriveSettingState {
   token?: string;
-  user?: { id: string, email: string }
+  user?: { id: string, name: string }
   options?: IGoogleDriveSyncOption[];
   folders?: IGoogleDriveFolder[];
 
@@ -41,6 +41,7 @@ export default class GoogleDrivePanel extends React.PureComponent<IGoogleDriveSe
   async componentWillMount() {
     await GoogleApiUtil.load('client')
     await GoogleApiUtil.clientLoad('drive', 'v3')
+    //await GoogleApiUtil.init()
     let googleDriveSyncOptions = await StorageUtil.getGoogleDriveSyncOptions();
     googleDriveSyncOptions = googleDriveSyncOptions.filter(opt => !!opt && !!opt.folder)
     console.log(googleDriveSyncOptions)
@@ -52,11 +53,12 @@ export default class GoogleDrivePanel extends React.PureComponent<IGoogleDriveSe
       token = result.token
       user = result.user
       this.setState({ token, user }, () => {
-        this.props.onAccountChange(this.createAccountNode(user.email))
+        this.props.onAccountChange(this.createAccountNode(user.name))
       })
 
     }
     catch (ex) {
+      console.log('auto login failed.', ex)
       if (token && ex.code === 401) {
         await ChromeAuthUtil.removeCachedAuthToken(token)
       }
@@ -130,10 +132,9 @@ export default class GoogleDrivePanel extends React.PureComponent<IGoogleDriveSe
 
   private async loginGoogle(interactive: boolean = true) {
     const token = await ChromeAuthUtil.getAuthToken(interactive)
-    // TODO: replace with people.get('people/me')
-    const user = await ChromeAuthUtil.getProfileUserInfo();
     GoogleApiUtil.setAuth(token)
-    console.log(user.id, user.email);
+    const user = await GoogleApiUtil.getProfile()
+    console.log(user.id, user.name)
     return { token, user }
 
   }
@@ -153,7 +154,7 @@ export default class GoogleDrivePanel extends React.PureComponent<IGoogleDriveSe
   onLogin = async () => {
     const { user, token } = await this.loginGoogle(true)
     this.setState({ token, user }, () => {
-      this.props.onAccountChange(this.createAccountNode(user.email))
+      this.props.onAccountChange(this.createAccountNode(user.name))
     })
   }
 
