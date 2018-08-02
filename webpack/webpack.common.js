@@ -59,7 +59,7 @@ module.exports = {
             {
                 context: 'static',
                 from: '*',
-                to: 'dist'
+                to: '../'
             }
         ])
     ]
