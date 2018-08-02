@@ -55,6 +55,11 @@ module.exports = {
         new CopyWebpackPlugin([
             {
                 from: 'lib/google.api.js',
+            },
+            {
+                context: 'static',
+                from: '*',
+                to: 'dist'
             }
         ])
     ]

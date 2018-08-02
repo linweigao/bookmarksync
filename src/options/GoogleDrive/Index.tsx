@@ -41,8 +41,7 @@ export default class GoogleDrivePanel extends React.PureComponent<IGoogleDriveSe
   async componentWillMount() {
     await GoogleApiUtil.load('client')
     await GoogleApiUtil.clientLoad('drive', 'v3')
-    //await GoogleApiUtil.init()
-    let googleDriveSyncOptions = await StorageUtil.getGoogleDriveSyncOptions();
+    let googleDriveSyncOptions = await StorageUtil.getGoogleDriveSyncOptions()
     googleDriveSyncOptions = googleDriveSyncOptions.filter(opt => !!opt && !!opt.folder)
     console.log(googleDriveSyncOptions)
     this.setState({ options: googleDriveSyncOptions })
