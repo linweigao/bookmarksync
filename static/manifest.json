@@ -15,8 +15,7 @@
   "background": {
     "scripts": [
       "js/background.js",
-      "js/vendor.js",
-      "js/google.api.js"
+      "js/vendor.js"
     ]
   },
   "permissions": [
