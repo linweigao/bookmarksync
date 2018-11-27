@@ -24,7 +24,8 @@
     "identity.email",
     "storage",
     "bookmarks",
-    "tabs"
+    "tabs",
+    "*://apis.google.com/*"
   ],
   "content_security_policy": "script-src 'self' https://apis.google.com http://localhost:8097; object-src 'self'",
   "oauth2": {
