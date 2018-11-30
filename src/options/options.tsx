@@ -59,7 +59,7 @@ class Options extends React.Component<{}, IOptionsState> {
             <GoogleDrivePanel onAccountChange={this.googleAccountChange} />
           </Content>
           <Footer style={{ textAlign: 'center' }}>
-            Bookmark Sync ©2018 Created by 120 Studio
+            Bookmark Sync @120 Studio
           </Footer>
         </Layout>
       </Layout>
