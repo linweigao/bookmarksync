@@ -54,9 +54,6 @@ module.exports = {
         new webpack.IgnorePlugin(/^\.\/locale$/, /moment$/),
         new CopyWebpackPlugin([
             {
-                from: 'lib/google.api.js',
-            },
-            {
                 context: 'static',
                 from: '*',
                 to: '../'
