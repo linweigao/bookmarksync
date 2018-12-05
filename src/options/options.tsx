@@ -59,7 +59,16 @@ class Options extends React.Component<{}, IOptionsState> {
             <GoogleDrivePanel onAccountChange={this.googleAccountChange} />
           </Content>
           <Footer style={{ textAlign: 'center' }}>
-            Bookmark Sync @120 Studio
+            <div>Bookmark Sync @ 120 Studio</div>
+            <div>
+              Donate $2 to support us via
+              <form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_top">
+                <input type="hidden" name="cmd" value="_s-xclick" />
+                <input type="hidden" name="hosted_button_id" value="6R8T89JWF7WFE" />
+                <input type="image" src="https://www.paypalobjects.com/en_US/i/btn/btn_donate_SM.gif" name="submit" title="PayPal - The safer, easier way to pay online!" alt="Donate with PayPal button" />
+                <img alt="" src="https://www.paypal.com/en_US/i/scr/pixel.gif" width="1" height="1" />
+              </form>
+            </div>
           </Footer>
         </Layout>
       </Layout>
