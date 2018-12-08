@@ -17,6 +17,7 @@ import 'antd/es/tooltip/style/css.js';
 import 'antd/es/dropdown/style/css.js';
 import 'antd/es/message/style/css.js';
 
+import './options.css'
 import GoogleDrivePanel from './GoogleDrive'
 
 interface IOptionsState {
@@ -40,7 +41,8 @@ class Options extends React.Component<{}, IOptionsState> {
       <Layout style={{ height: '100vh' }}>
         <Sider trigger={null} collapsible={false} >
           <div className="logo" >
-            <span>Bookmark Sync</span>
+            <img src='./../bookmark-48.png' />
+            <h1>Drive Mark</h1>
           </div>
           <Menu theme="dark" mode="inline" defaultSelectedKeys={['1']}>
             <Menu.Item key="1">
@@ -59,7 +61,7 @@ class Options extends React.Component<{}, IOptionsState> {
             <GoogleDrivePanel onAccountChange={this.googleAccountChange} />
           </Content>
           <Footer style={{ textAlign: 'center' }}>
-            <div>Bookmark Sync @ 120 Studio</div>
+            <div>Drive Mark @ 120 Studio</div>
             <div>
               <form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_blank" style={{ display: 'inline' }}>
                 <input type="hidden" name="cmd" value="_s-xclick" />

@@ -1,7 +1,7 @@
 {
   "manifest_version": 2,
-  "name": "Bookmark Sync",
-  "description": "Sync different sources to your bookmark for easy access.\r\nIncludes: Google Drive",
+  "name": "Drive Mark",
+  "description": "Map your Google drive to bookmark for easy access.",
   "version": "1.0",
   "options_page": "options.html",
   "browser_action": {
