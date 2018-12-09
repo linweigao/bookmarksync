@@ -3,3 +3,4 @@ node_modules/
 dist/
 tmp/
 dist.zip
+.DS_Store
